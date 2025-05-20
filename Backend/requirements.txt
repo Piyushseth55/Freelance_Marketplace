@@ -1,0 +1,8 @@
+Flask
+pymongo
+python-dotenv
+ipfshttpclient
+w3storage
+gunicorn
+langchain-groq
+requests
