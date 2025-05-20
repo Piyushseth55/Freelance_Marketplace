@@ -6,3 +6,6 @@ w3storage
 gunicorn
 langchain-groq
 requests
+eth-account
+flask-cors
+

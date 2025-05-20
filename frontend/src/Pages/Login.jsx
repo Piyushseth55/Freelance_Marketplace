@@ -12,12 +12,35 @@ const Login = () => {
   const { loginContext } = useAuth(); // 👈 context function
 
   const connectWallet = async () => {
-    if (window.ethereum) {
+      if (!window.ethereum) return setError("Metamask not found !!");
       try {
         const provider = new BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        const address = accounts[0];
-        setWalletAddress(address);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        const message = `Sign in to Web3 Freelance Platform at ${new Date().toISOString()}`;
+
+        const signature = await signer.signMessage(message);
+
+        const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          wallet_address: address,
+          signature,
+          message,
+          role: role, // auto-gen username
+        }),
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        return setError(result.error || "Login failed");
+      }
+
+
+      setWalletAddress(address);
 
         const loginData = {
           token: "mock-token", // or any dummy token for now
@@ -37,9 +60,6 @@ const Login = () => {
         setError("Access denied or error occurred");
         console.error(err);
       }
-    } else {
-      setError("MetaMask not found");
-    }
   };
 
   return (
