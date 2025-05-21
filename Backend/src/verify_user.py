@@ -7,6 +7,7 @@ def verify_signature(wallet_address, signature, message) :
     try:
        encoded_msg = encode_defunct(text = message)
        recovered = Account.recover_message(encoded_msg, signature = signature)
+       print("user verified !")
        return recovered.lower() == wallet_address.lower()
     except:
         return False

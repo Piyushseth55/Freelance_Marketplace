@@ -38,9 +38,11 @@ def set_matamask_wallet(wallet_address, role) :
     
 def get_user_by_wallet(wallet_address, role) :
     if role == "freelancer" :
-        freelancers.find_one({"wallet_address" : wallet_address})
+        user = freelancers.find_one({"wallet_address" : wallet_address})
+        return user
     else :
-        clients.find_one({"wallet_address" : wallet_address})
+        user = clients.find_one({"wallet_address" : wallet_address})
+        return user
    
    
 def add_skills(wallet_address, role, skills) :
