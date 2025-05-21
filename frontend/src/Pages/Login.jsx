@@ -1,65 +1,65 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BrowserProvider } from "ethers"; // Ethers v6
-
-import { useAuth } from "../context/AuthContext"; // your auth context
-
+import { toast } from "react-toastify"; // assuming react-toastify is used
+import { useAuth } from "../context/AuthContext";
+import { login } from "../service/authservice";
 const Login = () => {
   const [role, setRole] = useState("freelancer");
   const [walletAddress, setWalletAddress] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { loginContext } = useAuth(); // 👈 context function
+  const { loginContext } = useAuth();
 
   const connectWallet = async () => {
-      if (!window.ethereum) return setError("Metamask not found !!");
-      try {
-        const provider = new BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const address = await signer.getAddress();
-        const message = `Sign in to Web3 Freelance Platform at ${new Date().toISOString()}`;
+    if (!window.ethereum) return setError("Metamask not found !!");
 
-        const signature = await signer.signMessage(message);
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      const message = `Sign in to Web3 Freelance Platform at ${new Date().toISOString()}`;
+      const signature = await signer.signMessage(message);
 
-        const response = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          wallet_address: address,
-          signature,
-          message,
-          role: role, // auto-gen username
-        }),
-      });
+      const data = {
+        wallet_address: address,
+        signature,
+        message,
+        role,
+      };
 
-      const result = await response.json();
-      if (!result.success) {
-        return setError(result.error || "Login failed");
-      }
+      login(data)
+        .then((result) => {
+          if (!result.success) {
+            toast.error(result.error || "Login failed");
+            return;
+          }
 
+          toast.success("Login successful");
+          setWalletAddress(address);
 
-      setWalletAddress(address);
+          const loginData = {
+            token: result.token || "mock-token",
+            user: {
+              walletAddress: address,
+              role,
+            },
+          };
 
-        const loginData = {
-          token: "mock-token", // or any dummy token for now
-          user: {
-            walletAddress: address,
-            role: role,
-          },
-        };
+          loginContext(loginData);
 
-        // Save to context and localStorage
-        loginContext(loginData);
+          if (role === "freelancer") navigate("/private/freelancer/profile");
+          else navigate("/private/client/profile");
+        })
+        .catch((error) => {
+          console.error(error);
+          toast.error("Something went wrong during login");
+        });
 
-        // Navigate based on role
-        if (role === "freelancer") navigate("/private/freelancer/profile");
-        else navigate("/private/client/profile");
-      } catch (err) {
-        setError("Access denied or error occurred");
-        console.error(err);
-      }
+    } catch (err) {
+      console.error(err);
+      setError("Access denied or error occurred");
+    }
   };
 
   return (
@@ -103,7 +103,10 @@ const Login = () => {
             Connected: <span className="break-all">{walletAddress}</span>
           </p>
         )}
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+        {error && (
+          <p className="mt-4 text-sm text-red-600">{error}</p>
+        )}
       </div>
     </div>
   );
