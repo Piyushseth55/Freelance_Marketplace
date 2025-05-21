@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getProfileByWallet,updateClientProfile,updateFreelancerProfile } from "../service/profileService";
+import { getProfileByWallet, updateClientProfile, updateFreelancerProfile } from "../service/profileService";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -10,9 +11,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (user?.walletAddress) {
-      getProfileByWallet(user.walletAddress)
+      getProfileByWallet(user.walletAddress, user.role)
         .then((res) => {
-          console.log("API response:", res);
           if (res.success && res.profile) {
             setProfile(res.profile);
           }
@@ -29,7 +29,7 @@ const Profile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const payload = { wallet_address: user.walletAddress, role : user.role,  ...formData };
+    const payload = { wallet_address: user.walletAddress, role: user.role, ...formData };
 
     const updateFn = user.role === "client" ? updateClientProfile : updateFreelancerProfile;
 
@@ -38,6 +38,7 @@ const Profile = () => {
         if (res.success) {
           setProfile({ ...formData });
           setEditing(false);
+          toast.success("Profile updated successfully");
         }
       })
       .catch((err) => {
@@ -47,14 +48,27 @@ const Profile = () => {
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">{user.role} profile</h2>
+      <h2 className="text-2xl font-bold mb-4 capitalize">{user.role} Profile</h2>
+
       {profile ? (
         <div>
-          {Object.entries(profile).map(([key, value]) => (
-            <p key={key} className="mb-2">
-              <span className="font-semibold capitalize">{key}:</span> {value}
-            </p>
-          ))}
+          {user.role === "client" ? (
+            <>
+              <p className="mb-2"><span className="font-semibold">Name:</span> {profile.name}</p>
+              <p className="mb-2"><span className="font-semibold">Email:</span> {profile.email}</p>
+              <p className="mb-2"><span className="font-semibold">Contact:</span> {profile.contact}</p>
+              <p className="mb-2"><span className="font-semibold">Company:</span> {profile.company}</p>
+              <p className="mb-2"><span className="font-semibold">Post:</span> {profile.post}</p>
+            </>
+          ) : (
+            <>
+              <p className="mb-2"><span className="font-semibold">Name:</span> {profile.name}</p>
+              <p className="mb-2"><span className="font-semibold">Email:</span> {profile.email}</p>
+              <p className="mb-2"><span className="font-semibold">Contact:</span> {profile.contact}</p>
+              <p className="mb-2"><span className="font-semibold">Objective:</span> {profile.objective}</p>
+            </>
+          )}
+
           <button
             onClick={() => {
               setFormData(profile);
@@ -79,21 +93,53 @@ const Profile = () => {
 
       {editing && (
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <input
+            name="name"
+            placeholder="Name"
+            value={formData.name || ""}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded"
+          />
+          <input
+            name="email"
+            placeholder="Email"
+            value={formData.email || ""}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded"
+          />
+          <input
+            name="contact"
+            placeholder="Contact"
+            value={formData.contact || ""}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded"
+          />
+
           {user.role === "client" ? (
             <>
-              <input name="name" placeholder="Name" value={formData.name || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="email" placeholder="Email" value={formData.email || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="contact" placeholder="Contact" value={formData.contact || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="company" placeholder="Company" value={formData.company || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="post" placeholder="Post" value={formData.post || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
+              <input
+                name="company"
+                placeholder="Company"
+                value={formData.company || ""}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+              />
+              <input
+                name="post"
+                placeholder="Post"
+                value={formData.post || ""}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+              />
             </>
           ) : (
-            <>
-              <input name="name" placeholder="Name" value={formData.name || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="email" placeholder="Email" value={formData.email || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="contact" placeholder="Contact" value={formData.contact || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-              <input name="objective" placeholder="Objective" value={formData.objective || ""} onChange={handleInputChange} className="w-full p-2 border rounded" />
-            </>
+            <input
+              name="objective"
+              placeholder="Objective"
+              value={formData.objective || ""}
+              onChange={handleInputChange}
+              className="w-full p-2 border rounded"
+            />
           )}
 
           <button

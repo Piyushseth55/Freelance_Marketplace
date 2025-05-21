@@ -2,61 +2,45 @@ import React, { useState } from "react";
 
 const Skills = () => {
   const [skills, setSkills] = useState([]);
-  const [newSkill, setNewSkill] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const predefinedSkills = ["JavaScript", "React", "Node.js", "Python", "Java", "HTML", "CSS", "MongoDB"];
 
-  const handleAddSkill = () => {
-    setShowForm(true);
-  };
-
-  const handleSaveSkill = () => {
-    if (newSkill.trim() === "") return;
-
-    const updatedSkills = [...skills, newSkill.trim()];
-    setSkills(updatedSkills);
-    setNewSkill("");
-    setShowForm(false);
-
-    // For now, just log to console
-    console.log("Skills saved:", updatedSkills);
+  const handleAddSkill = (skill) => {
+    if (!skills.includes(skill)) {
+      const updatedSkills = [...skills, skill];
+      setSkills(updatedSkills);
+      console.log("Skills saved:", updatedSkills);
+    }
   };
 
   return (
     <div style={{ paddingTop: "64px", maxWidth: "600px", margin: "0 auto" }}>
-      <h2 className="text-xl font-bold mb-4">Skills</h2>
+      <h2 className="text-xl font-bold mb-4">Select Your Skills</h2>
 
-      <ul className="mb-4">
+      <div className="mb-4 flex flex-wrap gap-3">
+        {predefinedSkills.map((skill, index) => (
+          <button
+            key={index}
+            onClick={() => handleAddSkill(skill)}
+            className={`px-4 py-2 rounded-full text-white shadow transition ${
+              skills.includes(skill)
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+            disabled={skills.includes(skill)}
+          >
+            {skill}
+          </button>
+        ))}
+      </div>
+
+      <h3 className="text-lg font-semibold mb-2">Your Skills:</h3>
+      <ul className="list-disc list-inside">
         {skills.length === 0 ? (
-          <li>No skills added yet.</li>
+          <li>No skills selected yet.</li>
         ) : (
           skills.map((skill, index) => <li key={index}>{skill}</li>)
         )}
       </ul>
-
-      {showForm ? (
-        <div className="mb-4">
-          <input
-            type="text"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-            placeholder="Enter skill"
-            className="border px-2 py-1 rounded w-full"
-          />
-          <button
-            onClick={handleSaveSkill}
-            className="mt-2 bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Save Skill
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={handleAddSkill}
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
-          Add Skill
-        </button>
-      )}
     </div>
   );
 };

@@ -1,18 +1,27 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BrowserProvider } from "ethers"; // Ethers v6
-import { toast } from "react-toastify"; // assuming react-toastify is used
+import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import { login } from "../service/authservice";
+
 const Login = () => {
   const [role, setRole] = useState("freelancer");
   const [walletAddress, setWalletAddress] = useState("");
   const [error, setError] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false); // 🔒 New state
   const navigate = useNavigate();
   const { loginContext } = useAuth();
 
   const connectWallet = async () => {
-    if (!window.ethereum) return setError("Metamask not found !!");
+    if (isConnecting) return; // Prevent duplicate clicks
+    setIsConnecting(true);    // Mark start of process
+
+    if (!window.ethereum) {
+      setError("Metamask not found !!");
+      setIsConnecting(false);
+      return;
+    }
 
     try {
       const provider = new BrowserProvider(window.ethereum);
@@ -28,37 +37,38 @@ const Login = () => {
         role,
       };
 
-      login(data)
-        .then((result) => {
-          if (!result.success) {
-            toast.error(result.error || "Login failed");
-            return;
-          }
+      const result = await login(data); // Wait for login
 
-          toast.success("Login successful");
-          setWalletAddress(address);
+      if (!result.success) {
+        toast.error(result.error || "Login failed");
+        return;
+      }
 
-          const loginData = {
-            token: result.token || "mock-token",
-            user: {
-              walletAddress: address,
-              role,
-            },
-          };
+      toast.success("Login successful");
+      setWalletAddress(address);
 
-          loginContext(loginData);
+      const loginData = {
+        token: result.token || "mock-token",
+        user: {
+          walletAddress: address,
+          role,
+        },
+      };
 
-          if (role === "freelancer") navigate("/private/freelancer/profile");
-          else navigate("/private/client/profile");
-        })
-        .catch((error) => {
-          console.error(error);
-          toast.error("Something went wrong during login");
-        });
+      loginContext(loginData);
+
+      if (role === "freelancer") navigate("/private/freelancer/profile");
+      else navigate("/private/client/profile");
 
     } catch (err) {
       console.error(err);
-      setError("Access denied or error occurred");
+      if (err.code === -32002) {
+        toast.warn("MetaMask is already processing a request. Please check your wallet.");
+      } else {
+        setError("Access denied or error occurred");
+      }
+    } finally {
+      setIsConnecting(false); // ✅ Always reset
     }
   };
 
@@ -93,9 +103,12 @@ const Login = () => {
 
         <button
           onClick={connectWallet}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+          disabled={isConnecting}
+          className={`w-full ${
+            isConnecting ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+          } text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out`}
         >
-          Connect Wallet
+          {isConnecting ? "Connecting..." : "Connect Wallet"}
         </button>
 
         {walletAddress && (

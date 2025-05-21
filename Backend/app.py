@@ -54,30 +54,37 @@ def update_freelancer_profile() :
             return jsonify({"success" : False, "error" : "error occured"}), 401
         
         
-@app.route("/profile/<wallet_address>", methods = ["GET"])
-def get_profile_by_wallet(wallet_address) :
-    try :    
+@app.route("/profile/<wallet_address>", methods=["GET"])
+def get_profile_by_wallet(wallet_address):
+    try:
         role = request.args.get("role", "freelancer")
-        if not wallet_address :
-            return jsonify({"success" : False, "error" : "wallet_address is required"}), 400
-        
+
+        if not wallet_address:
+            return jsonify({"success": False, "error": "wallet_address is required"}), 400
+
         user = get_user_by_wallet(wallet_address, role)
-        if user :
+
+        if user:
             user = convert_objectid(user)
-            print("name", user["name"])
+            print("Fetched user:", user)
+
             profile = {
-                "name"      : user["name"],
-                "objective" : user["objective"],
-                "email"     : user["email"],
-                "contact"   : user["contact"]
+                "name": user.get("name", ""),
+                "objective": user.get("objective", ""),
+                "email": user.get("email", ""),
+                "contact": user.get("contact", ""),
+                "company": user.get("company", ""),
+                "post": user.get("post", "")
             }
-            return jsonify({"success" : True, "message" : "user fetched successfuly", "profile" : profile}), 200
-        else :
-            return jsonify({"success" : False, "error" : "user not found"}), 404
-    except Exception as e :
-        print("Error in fetching" , e)
-        return jsonify({"seccess" : False, "error": str(e)}), 500
-    
+
+            return jsonify({"success": True, "message": "user fetched successfully", "profile": profile}), 200
+        else:
+            return jsonify({"success": False, "error": "user not found"}), 404
+
+    except Exception as e:
+        print("Internal server error:", str(e))
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
 
 
 @app.route("/profile/client/update", methods = ["PUT"])
