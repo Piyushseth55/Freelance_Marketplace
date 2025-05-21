@@ -12,6 +12,7 @@ const Profile = () => {
     if (user?.walletAddress) {
       getProfileByWallet(user.walletAddress)
         .then((res) => {
+          console.log("API response:", res);
           if (res.success && res.profile) {
             setProfile(res.profile);
           }
@@ -28,7 +29,7 @@ const Profile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const payload = { wallet_address: user.walletAddress, ...formData };
+    const payload = { wallet_address: user.walletAddress, role : user.role,  ...formData };
 
     const updateFn = user.role === "client" ? updateClientProfile : updateFreelancerProfile;
 
