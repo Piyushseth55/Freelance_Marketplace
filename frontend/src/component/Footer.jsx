@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 
 const Footer = () => {
   return (
-   <footer className="bg-white shadow-inner">
+   <footer className=" text-black font-bold shadow-inner">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center text-gray-600 text-sm">
         <p className="text-center md:text-left">&copy; {new Date().getFullYear()} MyBlog. All rights reserved.</p>
         

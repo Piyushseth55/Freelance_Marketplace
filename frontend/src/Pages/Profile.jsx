@@ -16,7 +16,7 @@ const Profile = () => {
           if (res.success && res.profile) {
             setProfile(res.profile);
           }
-        })
+        }) 
         .catch((err) => {
           console.error("Error fetching profile", err);
         });
