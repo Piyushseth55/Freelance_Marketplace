@@ -1,26 +1,21 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-// Assume you have a useAuth hook that gives auth info
 import { useAuth } from '../context/AuthContext';
-
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-   const { isAuthenticated, user, logoutContext } = useAuth(); // get role from user.role
-
-  
+  const { isAuthenticated, user, logoutContext } = useAuth();
 
   const handleLogout = () => {
-    //doLogout();
-    logoutContext(); // clear context
+    logoutContext();
     navigate('/');
   };
 
   const linkClass = ({ isActive }) =>
     `block px-4 py-2 rounded-md transition ${
-      isActive ? 'text-blue-700' : 'text-gray-700 hover:bg-gray-200'
+      isActive ? 'text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-200'
     }`;
 
   const renderLinks = () => {
@@ -36,7 +31,7 @@ const Header = () => {
     if (user?.role === 'client') {
       return (
         <>
-          <NavLink to="/private/client" className={linkClass}>Dashboard</NavLink>
+          <NavLink to="/private/client" end className={linkClass}>Dashboard</NavLink>
           <NavLink to="/private/client/postjob" className={linkClass}>Post Job</NavLink>
           <NavLink to="/private/client/profile" className={linkClass}>Profile</NavLink>
           <button onClick={handleLogout} className="text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-md">Logout</button>
@@ -47,7 +42,7 @@ const Header = () => {
     if (user?.role === 'freelancer') {
       return (
         <>
-          <NavLink to="/private/freelancer" className={linkClass}>Job Board</NavLink>
+          <NavLink to="/private/freelancer" end className={linkClass}>Job Board</NavLink>
           <NavLink to="/private/freelancer/skills" className={linkClass}>Skills</NavLink>
           <NavLink to="/private/freelancer/profile" className={linkClass}>Profile</NavLink>
           <button onClick={handleLogout} className="text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-md">Logout</button>
@@ -55,7 +50,6 @@ const Header = () => {
       );
     }
 
-    // fallback
     return <NavLink to="/" className={linkClass}>Home</NavLink>;
   };
 
@@ -65,12 +59,12 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           <div className="text-xl font-bold text-blue-600">Market Place</div>
 
-          {/* Desktop */}
+          {/* Desktop Links */}
           <div className="hidden md:flex space-x-4">
             {renderLinks()}
           </div>
 
-          {/* Mobile toggle */}
+          {/* Mobile Toggle */}
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -82,7 +76,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden px-4 pb-3 space-y-1">
           {renderLinks()}
